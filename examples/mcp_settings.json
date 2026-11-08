@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "openrouter-management": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/YpsilonTM/openrouter-management-mcp",
+        "openrouter-management-mcp"
+      ],
+      "env": {
+        "OPENROUTER_MANAGEMENT_API_KEY": "",
+        "OPENROUTER_MGMT_LOG_LEVEL": "info"
+      }
+    }
+  },
+  "_comment": "Bind OPENROUTER_MANAGEMENT_API_KEY via MCPHub per-user credentials. Mirror the env name on the mcphub service in ~/docker/ai."
+}
