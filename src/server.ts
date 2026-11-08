@@ -8,22 +8,44 @@ import { log, getLogLevel } from "./log.js";
 import { registerKeyTools } from "./tools/keys.js";
 import { registerWorkspaceTools } from "./tools/workspaces.js";
 import { registerAccountTools } from "./tools/account.js";
+import { registerGuardrailTools } from "./tools/guardrails.js";
+import { registerGuardrailPolicyTools } from "./tools/guardrail-policies.js";
+import { registerByokTools } from "./tools/byok.js";
+import { registerOrganizationTools } from "./tools/organization.js";
+import { registerObservabilityTools } from "./tools/observability.js";
+import { registerExternalUserTools } from "./tools/external-users.js";
+import { registerPrivateTools } from "./tools/private.js";
+import { registerScimTools } from "./tools/scim.js";
+import { registerAnalyticsTools } from "./tools/analytics.js";
+import { registerPresetTools } from "./tools/presets.js";
+import { registerGenerationTools } from "./tools/generation.js";
 
 export const SERVER_NAME = "openrouter-management-mcp";
-export const SERVER_VERSION = "1.1.0";
+export const SERVER_VERSION = "2.0.0";
 
 export function createServer(client: OpenRouterManagementClient): McpServer {
   const server = new McpServer(
     { name: SERVER_NAME, version: SERVER_VERSION },
     {
       instructions:
-        "Manages an OpenRouter account via the Management API: inference API keys (per-key USD spend limits, disable, create, delete), workspace budgets, credits, and usage activity. Keys are identified by `hash`, never by the sk-or-... secret. To change a key, find it with openrouter_list_keys (name_contains) first. Prefer disabling over deleting.",
+        "Manages an OpenRouter account via the Management API (requires OPENROUTER_MANAGEMENT_API_KEY). Covers: API keys, workspaces (+ members/budgets), guardrails (+ assignments), guardrail policies, BYOK, org members/settings, observability destinations, external users, private providers/endpoints, SCIM, analytics, presets, credits/activity, generation feedback. Keys are identified by `hash`, never the sk-or-... secret. Prefer disabling keys over deleting. Destructive tools require confirm=true.",
     },
   );
 
   registerKeyTools(server, client);
   registerWorkspaceTools(server, client);
   registerAccountTools(server, client);
+  registerGuardrailTools(server, client);
+  registerGuardrailPolicyTools(server, client);
+  registerByokTools(server, client);
+  registerOrganizationTools(server, client);
+  registerObservabilityTools(server, client);
+  registerExternalUserTools(server, client);
+  registerPrivateTools(server, client);
+  registerScimTools(server, client);
+  registerAnalyticsTools(server, client);
+  registerPresetTools(server, client);
+  registerGenerationTools(server, client);
 
   return server;
 }

@@ -132,6 +132,15 @@ export function registerKeyTools(
         workspace_id: workspaceIdSchema
           .optional()
           .describe("Workspace to create the key in. Defaults to the default workspace."),
+        creator_user_id: z
+          .string()
+          .min(1)
+          .optional()
+          .describe("Org only: create the key on behalf of this member user id."),
+        external: z
+          .boolean()
+          .optional()
+          .describe("Mark the key as external (Connect / provisioned)."),
       },
       annotations: WRITE,
     },
@@ -151,6 +160,8 @@ export function registerKeyTools(
               include_byok_in_limit: args.include_byok_in_limit,
               expires_at: args.expires_at,
               workspace_id: args.workspace_id,
+              creator_user_id: args.creator_user_id,
+              external: args.external,
             },
           }),
       ),

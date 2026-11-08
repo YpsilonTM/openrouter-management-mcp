@@ -3,17 +3,107 @@ import assert from "node:assert/strict";
 import { connect } from "./helpers.js";
 
 const EXPECTED_TOOLS = [
+  "openrouter_activate_private_endpoint",
+  "openrouter_add_workspace_members",
+  "openrouter_assign_guardrail_keys",
+  "openrouter_assign_guardrail_members",
+  "openrouter_create_account_policy",
+  "openrouter_create_budget_policy",
+  "openrouter_create_byok",
+  "openrouter_create_external_user",
+  "openrouter_create_guardrail",
   "openrouter_create_key",
+  "openrouter_create_model_availability_policy",
+  "openrouter_create_moderation_policy",
+  "openrouter_create_observability_destination",
+  "openrouter_create_preset_chat_completions",
+  "openrouter_create_preset_messages",
+  "openrouter_create_preset_responses",
+  "openrouter_create_private_endpoint",
+  "openrouter_create_private_provider",
+  "openrouter_create_scim_group_mapping",
+  "openrouter_create_workspace",
+  "openrouter_delete_account_policy",
+  "openrouter_delete_budget_policy",
+  "openrouter_delete_byok",
+  "openrouter_delete_external_user",
+  "openrouter_delete_guardrail",
   "openrouter_delete_key",
+  "openrouter_delete_model_availability_policy",
+  "openrouter_delete_moderation_policy",
+  "openrouter_delete_observability_destination",
+  "openrouter_delete_private_endpoint",
+  "openrouter_delete_private_provider",
+  "openrouter_delete_scim_group_mapping",
+  "openrouter_delete_workspace",
   "openrouter_delete_workspace_budget",
+  "openrouter_disable_private_endpoint",
+  "openrouter_enable_private_endpoint",
   "openrouter_get_activity",
+  "openrouter_get_analytics_meta",
+  "openrouter_get_api_key_policy_assignment",
+  "openrouter_get_budget_policy",
+  "openrouter_get_byok",
   "openrouter_get_credits",
+  "openrouter_get_external_user",
+  "openrouter_get_guardrail",
   "openrouter_get_key",
+  "openrouter_get_member_policy_assignment",
+  "openrouter_get_model_availability_policy",
+  "openrouter_get_moderation_policy",
+  "openrouter_get_observability_destination",
+  "openrouter_get_organization_settings",
+  "openrouter_get_private_endpoint",
+  "openrouter_get_private_provider",
+  "openrouter_get_scim_group_mapping",
+  "openrouter_get_scim_sync_job",
+  "openrouter_get_workspace",
+  "openrouter_get_workspace_budget",
+  "openrouter_list_account_policies",
+  "openrouter_list_all_key_guardrail_assignments",
+  "openrouter_list_all_member_guardrail_assignments",
+  "openrouter_list_budget_policies",
+  "openrouter_list_byok",
+  "openrouter_list_external_users",
+  "openrouter_list_guardrail_key_assignments",
+  "openrouter_list_guardrail_member_assignments",
+  "openrouter_list_guardrails",
   "openrouter_list_keys",
+  "openrouter_list_model_availability_policies",
+  "openrouter_list_moderation_policies",
+  "openrouter_list_observability_destinations",
+  "openrouter_list_organization_members",
+  "openrouter_list_private_endpoints",
+  "openrouter_list_private_providers",
+  "openrouter_list_scim_group_mappings",
+  "openrouter_list_scim_groups",
   "openrouter_list_workspace_budgets",
+  "openrouter_list_workspace_members",
   "openrouter_list_workspaces",
+  "openrouter_query_analytics",
+  "openrouter_remove_workspace_members",
+  "openrouter_set_api_key_policy_assignment",
+  "openrouter_set_member_policy_assignment",
   "openrouter_set_workspace_budget",
+  "openrouter_start_scim_sync",
+  "openrouter_submit_generation_feedback",
+  "openrouter_unassign_guardrail_keys",
+  "openrouter_unassign_guardrail_members",
+  "openrouter_update_account_policy",
+  "openrouter_update_budget_policy",
+  "openrouter_update_byok",
+  "openrouter_update_external_user",
+  "openrouter_update_guardrail",
   "openrouter_update_key",
+  "openrouter_update_model_availability_policy",
+  "openrouter_update_moderation_policy",
+  "openrouter_update_observability_destination",
+  "openrouter_update_organization_settings",
+  "openrouter_update_private_endpoint",
+  "openrouter_update_private_provider",
+  "openrouter_update_scim_group_mapping",
+  "openrouter_update_workspace",
+  "openrouter_validate_private_endpoint",
 ];
 
 const key = (i: number, name: string) => ({ hash: `hash${i}`, name, label: `sk-or-v1-${i}...` });
@@ -225,6 +315,72 @@ describe("account tools", () => {
     const t = await connect(() => ({ body: { data: [] } }));
     await t.call("openrouter_get_activity", { api_key_hash: "abc", group_by_workspace: true });
     assert.deepEqual(t.calls[0].query, { api_key_hash: "abc", group_by: "workspace" });
+    await t.close();
+  });
+});
+
+describe("workspaces / guardrails / byok", () => {
+  it("creates a workspace", async () => {
+    const t = await connect(() => ({ status: 201, body: { data: { id: "w1" } } }));
+    const res = await t.call("openrouter_create_workspace", {
+      name: "Prod",
+      slug: "prod",
+      default_provider_sort: "price",
+    });
+    assert.equal(res.isError, false);
+    assert.equal(t.calls[0].method, "POST");
+    assert.equal(t.calls[0].path, "/workspaces");
+    assert.deepEqual(t.calls[0].body, {
+      name: "Prod",
+      slug: "prod",
+      default_provider_sort: "price",
+    });
+    await t.close();
+  });
+
+  it("creates a guardrail and assigns keys", async () => {
+    const t = await connect(() => ({ status: 201, body: { data: { id: "g1" } } }));
+    const id = "550e8400-e29b-41d4-a716-446655440000";
+    await t.call("openrouter_create_guardrail", {
+      name: "Strict",
+      allowed_providers: ["openai"],
+      limit_usd: 10,
+      reset_interval: "daily",
+    });
+    assert.equal(t.calls[0].path, "/guardrails");
+    assert.equal((t.calls[0].body as { name: string }).name, "Strict");
+
+    await t.call("openrouter_assign_guardrail_keys", { id, key_hashes: ["abc"] });
+    assert.equal(t.calls[1].method, "POST");
+    assert.equal(t.calls[1].path, `/guardrails/${id}/assignments/keys`);
+    assert.deepEqual(t.calls[1].body, { key_hashes: ["abc"] });
+    await t.close();
+  });
+
+  it("creates BYOK without logging the secret in tool log fields only via API body", async () => {
+    const t = await connect(() => ({ status: 201, body: { data: { id: "b1" } } }));
+    await t.call("openrouter_create_byok", {
+      provider: "openai",
+      key: "sk-secret",
+      name: "prod",
+    });
+    assert.deepEqual(t.calls[0].body, {
+      provider: "openai",
+      key: "sk-secret",
+      name: "prod",
+    });
+    await t.close();
+  });
+
+  it("queries analytics with metrics", async () => {
+    const t = await connect(() => ({ body: { data: [] } }));
+    await t.call("openrouter_query_analytics", {
+      metrics: ["spend"],
+      dimensions: ["model"],
+    });
+    assert.equal(t.calls[0].method, "POST");
+    assert.equal(t.calls[0].path, "/analytics/query");
+    assert.deepEqual(t.calls[0].body, { metrics: ["spend"], dimensions: ["model"] });
     await t.close();
   });
 });

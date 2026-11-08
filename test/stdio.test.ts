@@ -24,6 +24,8 @@ describe("stdio (built server)", { skip: !existsSync(entry) && "run `npm run bui
     const client = await spawnServer({});
     const { tools } = await client.listTools();
     assert.ok(tools.some((t) => t.name === "openrouter_update_key"));
+    assert.ok(tools.some((t) => t.name === "openrouter_list_guardrails"));
+    assert.ok(tools.length >= 100);
 
     const res = await client.callTool({ name: "openrouter_get_credits", arguments: {} });
     assert.equal(res.isError, true);
@@ -33,7 +35,12 @@ describe("stdio (built server)", { skip: !existsSync(entry) && "run `npm run bui
   const liveKey = process.env.OPENROUTER_MANAGEMENT_API_KEY;
   it("live: read-only calls against OpenRouter", { skip: !liveKey && "OPENROUTER_MANAGEMENT_API_KEY not set" }, async () => {
     const client = await spawnServer({ OPENROUTER_MANAGEMENT_API_KEY: liveKey! });
-    for (const name of ["openrouter_get_credits", "openrouter_list_keys", "openrouter_list_workspaces"]) {
+    for (const name of [
+      "openrouter_get_credits",
+      "openrouter_list_keys",
+      "openrouter_list_workspaces",
+      "openrouter_list_guardrails",
+    ]) {
       const res = await client.callTool({ name, arguments: {} });
       const text = (res.content as { text: string }[])[0]?.text;
       assert.equal(res.isError, undefined, `${name} failed: ${text}`);
